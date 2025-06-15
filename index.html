@@ -11,13 +11,15 @@
       margin: 50px 0;
       font-family: sans-serif;
     }
-
-    /* Main image stays centered in flow */
+    
+    /* inside your existing <style>…</style> */
     #mainImage {
-      max-width: 90%;
+      width: 100%;
       height: auto;
-      border: 2px solid #ccc;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      max-height: 90vh;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
     }
 
     /* Pin the button to the viewport’s top-left, above everything */
