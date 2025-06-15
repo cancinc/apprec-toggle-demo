@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Image Toggle with Corner Button</title>
+  <title>Appreciators Toggle Demo</title>
   <style>
     body {
       display: flex;
@@ -12,7 +12,7 @@
       font-family: sans-serif;
     }
 
-    /* Main image stays centered in flow */
+    /* fluid, viewport-responsive main image */
     #mainImage {
       width: 100%;
       height: auto;
@@ -20,9 +20,11 @@
       object-fit: contain;
       display: block;
       margin: 0 auto;
+      border: 2px solid #ccc;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
-    /* Pin the button to the viewport’s top-left, above everything */
+    /* pinned “A” button in top-left, always above image, with bounce */
     #toggleBtn {
       position: fixed;
       top: 20px;
@@ -32,60 +34,55 @@
       border: none;
       padding: 0;
       cursor: pointer;
+      animation: float 1.5s ease-in-out infinite;
     }
     #toggleBtn img {
       display: block;
-      width: 80px;  /* tweak to taste */
+      width: 80px;
       height: auto;
     }
-    /* this adds the bobbing to the button */
+
     @keyframes float {
-      0%, 100%   { transform: translateY(0); }
-      50%        { transform: translateY(-10px); }
-    }
-    
-    #toggleBtn {
-      /* existing positioning… */
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      z-index: 1000;
-      background: none;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-    
-      /* new: make it float */
-      animation: float 1s ease-in-out infinite;
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-10px); }
     }
   </style>
 </head>
 <body>
 
-  <!-- Corner “A” button -->
+  <!-- corner “A” toggle button -->
   <button id="toggleBtn">
     <img src="Appreciator-A.png" alt="Toggle Image" />
   </button>
 
-  <!-- Now pointing at your singular PNG filename -->
-  <img
-    id="mainImage"
-    src="Appreciator-OG-1150.png"
-    alt="Appreciator Static"
-  />
+  <!-- main image placeholder (src set via JS) -->
+  <img id="mainImage" alt="Appreciator Static" />
 
   <script>
     (function() {
-      const mainImg     = document.getElementById('mainImage');
-      const toggleBtn   = document.getElementById('toggleBtn');
-      const staticSrc   = 'Appreciator-OG-1150.png';
-      const gifSrc      = 'Appreciators-gif-1150.gif';
+      const mainImg   = document.getElementById('mainImage');
+      const toggleBtn = document.getElementById('toggleBtn');
+
+      function makeUrls(tokenId) {
+        const base = 'https://ipfs.filebase.io/ipfs/bafybeibqunvukim6czvbu2rj3o4yizat7g6tdm7vz5wewclwykgxiv3h6y/html/';
+        return {
+          staticSrc: `${base}${tokenId}.png`,
+          gifSrc:    `${base}${tokenId}.gif`
+        };
+      }
+
+      // initialize for token 1150
+      let { staticSrc, gifSrc } = makeUrls('1150');
       let showingStatic = true;
+      mainImg.src = staticSrc;
+      mainImg.alt = 'Appreciator Static';
 
       toggleBtn.addEventListener('click', () => {
         showingStatic = !showingStatic;
         mainImg.src = showingStatic ? staticSrc : gifSrc;
-        mainImg.alt = showingStatic ? 'Appreciator Static' : 'Appreciator Animated';
+        mainImg.alt = showingStatic
+          ? 'Appreciator Static'
+          : 'Appreciator Animated';
       });
     })();
   </script>
