@@ -84,44 +84,67 @@
   </div>
 
   <!-- main image placeholder -->
-  <img
-    id="mainImage"
-    alt="Appreciator Static"
-  />
+  <img id="mainImage" alt="Appreciator Static" />
 
   <script>
     (function() {
-      function makeUrls(tokenId) {
-        const base = 'https://ipfs.filebase.io/ipfs/bafybeibqunvukim6czvbu2rj3o4yizat7g6tdm7vz5wewclwykgxiv3h6y/html/';
+      const mainImg    = document.getElementById('mainImage');
+      const toggleBtn  = document.getElementById('toggleBtn');
+      const tokenInput = document.getElementById('tokenInput');
+      const loadBtn    = document.getElementById('loadBtn');
+
+      async function fetchTokenImages(tokenId) {
+        const pageUrl = 
+          'https://ipfs.filebase.io/ipfs/bafybeibqunvukim6czvbu2rj3o4yizat7g6tdm7vz5wewclwykgxiv3h6y/html/' 
+          + tokenId + '.html';
+        const resp = await fetch(pageUrl);
+        if (!resp.ok) throw new Error(`Token page not found: ${resp.status}`);
+        const text = await resp.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+        const imgs = Array.from(doc.querySelectorAll('img'));
+        const staticImg = imgs.find(i => i.src.endsWith('.png'));
+        const gifImg    = imgs.find(i => i.src.endsWith('.gif'));
+        if (!staticImg || !gifImg) {
+          throw new Error('Couldn’t locate PNG and/or GIF on token page');
+        }
         return {
-          staticSrc: `${base}${tokenId}.png`,
-          gifSrc:    `${base}${tokenId}.gif`
+          staticSrc: staticImg.src,
+          gifSrc:    gifImg.src
         };
       }
 
-      const mainImg     = document.getElementById('mainImage');
-      const toggleBtn   = document.getElementById('toggleBtn');
-      const tokenInput  = document.getElementById('tokenInput');
-      const loadBtn     = document.getElementById('loadBtn');
+      let staticSrc = '', gifSrc = '';
+      let showingStatic = true;
 
-      // Load a new token’s static image on “Load” click (or Enter)
-      loadBtn.addEventListener('click', () => {
+      // Load a new token’s images on “Load” click (or Enter)
+      loadBtn.addEventListener('click', async () => {
         const id = tokenInput.value.trim();
         if (!id) return;
-        ({ staticSrc, gifSrc } = makeUrls(id));
-        showingStatic = true;
-        mainImg.src = staticSrc;
-        mainImg.alt = 'Appreciator Static';
+        try {
+          const imgs = await fetchTokenImages(id);
+          staticSrc   = imgs.staticSrc;
+          gifSrc      = imgs.gifSrc;
+          showingStatic = true;
+          mainImg.src = staticSrc;
+          mainImg.alt = 'Appreciator Static';
+        } catch (err) {
+          alert(err.message);
+        }
       });
       tokenInput.addEventListener('keypress', e => {
         if (e.key === 'Enter') loadBtn.click();
       });
 
       // Initialize with token 1150
-      let { staticSrc, gifSrc } = makeUrls('1150');
-      let showingStatic = true;
-      mainImg.src = staticSrc;
-      mainImg.alt = 'Appreciator Static';
+      fetchTokenImages('1150')
+        .then(imgs => {
+          staticSrc   = imgs.staticSrc;
+          gifSrc      = imgs.gifSrc;
+          mainImg.src = staticSrc;
+          mainImg.alt = 'Appreciator Static';
+        })
+        .catch(err => console.error(err));
 
       // Toggle between PNG and GIF
       toggleBtn.addEventListener('click', () => {
