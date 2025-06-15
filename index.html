@@ -24,7 +24,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
-    /* pinned “A” button in top-left, always above image, with bounce */
+    /* pinned “A” button in top-left with bounce */
     #toggleBtn {
       position: fixed;
       top: 20px;
@@ -46,6 +46,24 @@
       0%, 100% { transform: translateY(0); }
       50%      { transform: translateY(-10px); }
     }
+
+    /* token-ID input bar */
+    #tokenQuery {
+      margin: 20px;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+    #tokenQuery input {
+      padding: 6px 8px;
+      font-size: 16px;
+      width: 120px;
+    }
+    #tokenQuery button {
+      padding: 6px 12px;
+      font-size: 16px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -55,14 +73,24 @@
     <img src="Appreciator-A.png" alt="Toggle Image" />
   </button>
 
-  <!-- main image placeholder (src set via JS) -->
-  <img id="mainImage" alt="Appreciator Static" />
+  <!-- Token-ID query bar -->
+  <div id="tokenQuery">
+    <input
+      type="text"
+      id="tokenInput"
+      placeholder="Enter Token ID"
+    />
+    <button id="loadBtn">Load</button>
+  </div>
+
+  <!-- main image placeholder -->
+  <img
+    id="mainImage"
+    alt="Appreciator Static"
+  />
 
   <script>
     (function() {
-      const mainImg   = document.getElementById('mainImage');
-      const toggleBtn = document.getElementById('toggleBtn');
-
       function makeUrls(tokenId) {
         const base = 'https://ipfs.filebase.io/ipfs/bafybeibqunvukim6czvbu2rj3o4yizat7g6tdm7vz5wewclwykgxiv3h6y/html/';
         return {
@@ -71,12 +99,31 @@
         };
       }
 
-      // initialize for token 1150
+      const mainImg     = document.getElementById('mainImage');
+      const toggleBtn   = document.getElementById('toggleBtn');
+      const tokenInput  = document.getElementById('tokenInput');
+      const loadBtn     = document.getElementById('loadBtn');
+
+      // Load a new token’s static image on “Load” click (or Enter)
+      loadBtn.addEventListener('click', () => {
+        const id = tokenInput.value.trim();
+        if (!id) return;
+        ({ staticSrc, gifSrc } = makeUrls(id));
+        showingStatic = true;
+        mainImg.src = staticSrc;
+        mainImg.alt = 'Appreciator Static';
+      });
+      tokenInput.addEventListener('keypress', e => {
+        if (e.key === 'Enter') loadBtn.click();
+      });
+
+      // Initialize with token 1150
       let { staticSrc, gifSrc } = makeUrls('1150');
       let showingStatic = true;
       mainImg.src = staticSrc;
       mainImg.alt = 'Appreciator Static';
 
+      // Toggle between PNG and GIF
       toggleBtn.addEventListener('click', () => {
         showingStatic = !showingStatic;
         mainImg.src = showingStatic ? staticSrc : gifSrc;
