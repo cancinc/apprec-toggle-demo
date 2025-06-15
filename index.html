@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Appreciators Toggle Demo</title>
+  <title>Image Toggle with Corner Button</title>
   <style>
     body {
       display: flex;
@@ -12,19 +12,15 @@
       font-family: sans-serif;
     }
 
-    /* fluid, viewport-responsive main image */
+    /* Main image stays centered in flow */
     #mainImage {
-      width: 100%;
+      max-width: 90%;
       height: auto;
-      max-height: 90vh;
-      object-fit: contain;
-      display: block;
-      margin: 0 auto;
       border: 2px solid #ccc;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
-    /* pinned “A” button in top-left with bounce */
+    /* Pin the button to the viewport’s top-left, above everything */
     #toggleBtn {
       position: fixed;
       top: 20px;
@@ -34,57 +30,42 @@
       border: none;
       padding: 0;
       cursor: pointer;
-      animation: float 1.5s ease-in-out infinite;
     }
     #toggleBtn img {
       display: block;
-      width: 80px;
+      width: 80px;  /* tweak to taste */
       height: auto;
     }
-
+    /* this adds the bobbing to the button */
     @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50%      { transform: translateY(-10px); }
+      0%, 100%   { transform: translateY(0); }
+      50%        { transform: translateY(-10px); }
     }
-
-    /* token-ID input bar */
-    #tokenQuery {
-      margin: 20px;
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-    }
-    #tokenQuery input {
-      padding: 6px 8px;
-      font-size: 16px;
-      width: 120px;
-    }
-    #tokenQuery button {
-      padding: 6px 12px;
-      font-size: 16px;
+    
+    #toggleBtn {
+      /* existing positioning… */
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+      background: none;
+      border: none;
+      padding: 0;
       cursor: pointer;
+    
+      /* new: make it float */
+      animation: float 1s ease-in-out infinite;
     }
   </style>
 </head>
 <body>
 
-  <!-- corner “A” toggle button -->
+  <!-- Corner “A” button -->
   <button id="toggleBtn">
     <img src="Appreciator-A.png" alt="Toggle Image" />
   </button>
 
-  <!-- Token-ID query bar -->
-  <div id="tokenQuery">
-    <input
-      type="text"
-      id="tokenInput"
-      placeholder="Enter Token ID"
-    />
-    <button id="loadBtn">Load</button>
-  </div>
-
-  <!-- main image placeholder -->
-  <!-- after: shows your original static PNG immediately -->
+  <!-- Now pointing at your singular PNG filename -->
   <img
     id="mainImage"
     src="Appreciator-OG-1150.png"
@@ -93,71 +74,16 @@
 
   <script>
     (function() {
-      const mainImg    = document.getElementById('mainImage');
-      const toggleBtn  = document.getElementById('toggleBtn');
-      const tokenInput = document.getElementById('tokenInput');
-      const loadBtn    = document.getElementById('loadBtn');
-
-      async function fetchTokenImages(tokenId) {
-        const pageUrl = 
-          'https://ipfs.filebase.io/ipfs/bafybeibqunvukim6czvbu2rj3o4yizat7g6tdm7vz5wewclwykgxiv3h6y/html/' 
-          + tokenId + '.html';
-        const resp = await fetch(pageUrl);
-        if (!resp.ok) throw new Error(`Token page not found: ${resp.status}`);
-        const text = await resp.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(text, 'text/html');
-        const imgs = Array.from(doc.querySelectorAll('img'));
-        const staticImg = imgs.find(i => i.src.endsWith('.png'));
-        const gifImg    = imgs.find(i => i.src.endsWith('.gif'));
-        if (!staticImg || !gifImg) {
-          throw new Error('Couldn’t locate PNG and/or GIF on token page');
-        }
-        return {
-          staticSrc: staticImg.src,
-          gifSrc:    gifImg.src
-        };
-      }
-
-      let staticSrc = '', gifSrc = '';
+      const mainImg     = document.getElementById('mainImage');
+      const toggleBtn   = document.getElementById('toggleBtn');
+      const staticSrc   = 'Appreciator-OG-1150.png';
+      const gifSrc      = 'Appreciators-gif-1150.gif';
       let showingStatic = true;
 
-      // Load a new token’s images on “Load” click (or Enter)
-      loadBtn.addEventListener('click', async () => {
-        const id = tokenInput.value.trim();
-        if (!id) return;
-        try {
-          const imgs = await fetchTokenImages(id);
-          staticSrc   = imgs.staticSrc;
-          gifSrc      = imgs.gifSrc;
-          showingStatic = true;
-          mainImg.src = staticSrc;
-          mainImg.alt = 'Appreciator Static';
-        } catch (err) {
-          alert(err.message);
-        }
-      });
-      tokenInput.addEventListener('keypress', e => {
-        if (e.key === 'Enter') loadBtn.click();
-      });
-
-      // Initialize with token 1150
-      fetchTokenImages('1150')
-        .then(imgs => {
-          staticSrc   = imgs.staticSrc;
-          gifSrc      = imgs.gifSrc;
-          mainImg.src = staticSrc;
-          mainImg.alt = 'Appreciator Static';
-        })
-        .catch(err => console.error(err));
-
-      // Toggle between PNG and GIF
       toggleBtn.addEventListener('click', () => {
         showingStatic = !showingStatic;
         mainImg.src = showingStatic ? staticSrc : gifSrc;
-        mainImg.alt = showingStatic
-          ? 'Appreciator Static'
-          : 'Appreciator Animated';
+        mainImg.alt = showingStatic ? 'Appreciator Static' : 'Appreciator Animated';
       });
     })();
   </script>
